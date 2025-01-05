@@ -10,6 +10,7 @@ output:
 ## Market Research Survey Analysis 
 -- Group 6
 
+We ended up conducting this survey using **Google Forms**
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -21,27 +22,14 @@ survey_data = read_csv("AppForm.csv")
 ```
 
 
-```{r}
-#pulling the column names 
-survey_names = colnames(survey_data)
-#converting it into a dataframe with column_names as the column name
-survey_names_df = data.frame(column_number = seq_along(survey_names),
-                             column_name = survey_names)
-#writing CSV just of column names since I am renaming every row for convenience 
-write.csv(survey_names_df, file = "survey_names.csv", row.names = FALSE)
-
-```
-
-
-```{r}
-head(survey_data, n = 5)
-```
-
 ## Renaming columns to ease analysis 
 
+A lot of the column names (survey questions) were long due to us wanting the user to understand each question. Although it was a little bit to decide what shorten names to use the most important thing is making sure that we get answers that are indicative of what the user feels. In order for us to do this we have to make sure the questions are clear and leave no room for confusion. 
 
-```{r}
-survey_data = survey_data %>% rename(date= "Timestamp",
+
+
+```{r renaming columns}
+new_survey_data = survey_data %>% rename(date= "Timestamp",
                                      age_range = `Select your age range:`,
                                      gender = `Select your gender:`,
                                      race = `Select your race:`,
@@ -60,73 +48,80 @@ survey_data = survey_data %>% rename(date= "Timestamp",
 
 ```
 
-New Column Names 
+## New Column names
 
-```{r}
-colnames(survey_data)
+```{r new column names}
+colnames(new_survey_data)
+```
+For reproducibility I saved a separate file called column names with both the new and old column names. This is to be used for reference if someone is accessing the raw survey data.
+
+```{r old and new column names}
+colnames_new = colnames(new_survey_data)
+colnames_old = colnames(survey_data)
+
+names1 = as.data.frame(colnames_new, row.names = seq_along(colnames_new))
+names2 = as.data.frame(colnames_old, row.names = seq_along(colnames_old))
+
+survey_names_reference = cbind(names2,names1)
+write.csv(survey_names_reference, file = "surveynames.csv")
 ```
 
-```{r}
-glimpse(survey_data)
+We are going to take a first peak into the survey data to see what changes need to be made.
+
+```{r glimpse survey data}
+glimpse(new_survey_data)
 ```
 ## Changing the factor variables from character to factor
 
-```{r}
-unique(survey_data$age_range)
+There a several factor variables that are just listed as character values. Listing these objects as character values diminishes the real meaning behind them. Converting to factor also makes it easier for us to make graphs of the data when the times comes to do so. Relationships are KEY and doing this helps of discover the relationships in the data.
 
-survey_data = survey_data %>% mutate(age_range = factor(age_range,
+```{r character to factor changes}
+# unique(new_survey_data$age_range)
+
+new_survey_data = new_survey_data %>% mutate(age_range = factor(age_range,
                                                         levels = c("Under 18",
                                                                    "18-24",
                                                                    "25-34",
                                                                    "35-44")))
 
-unique(survey_data$gender)
+# unique(new_survey_data$gender)
 
-survey_data = survey_data %>% mutate(gender = factor(gender, 
+new_survey_data = new_survey_data %>% mutate(gender = factor(gender, 
                               levels = c("Male", "Female")))
 
-unique(survey_data$race)
+# unique(new_survey_data$race)
 
-survey_data = survey_data %>% mutate(race = factor(race, levels = 
+new_survey_data = new_survey_data %>% mutate(race = factor(race, levels = 
 c("Asian or Pacific Islander", "Hispanic Origin", "White", 
   "Black or African American", "Prefer not to say")))
 
-unique(survey_data$commute_or_residence)
+# unique(new_survey_data$commute_or_residence)
 
-survey_data = survey_data %>% mutate(commute_or_residence = 
+new_survey_data = new_survey_data %>% mutate(commute_or_residence = 
                                        factor(commute_or_residence, levels = c(
                                          "Commuter", "Not a college student", 
                                          "Off Campus", "On Campus"
                                        )) )
-unique(survey_data$living_area_description)
+# unique(new_survey_data$living_area_description)
 
-survey_data = survey_data %>% mutate(living_area_description = factor(
+new_survey_data = new_survey_data %>% mutate(living_area_description = factor(
   living_area_description, levels = c("Suburb", "City", "Rural area" )
 ))
 
-unique(survey_data$compare_before_purchase)
+# unique(new_survey_data$compare_before_purchase)
 
-survey_data = survey_data %>% mutate(compare_before_purchase = factor(
+new_survey_data = new_survey_data %>% mutate(compare_before_purchase = factor(
   compare_before_purchase, levels = c("Rarely", "Sometimes","Often", "Always" )
 ))
 
-#unique(survey_data$most_interested_items) # this will have to be handled 
-#separately (probably will do a string operation then mutate another column on)
+# unique(new_survey_data$satisfaction_with_current_methods)
 
-#unique(survey_data$items_most_spent_monthly) # this will have to be handled 
-#separately (probably will do a string operation then mutate another column on)
-
-#unique(survey_data$price_comparison_methods) # this will have to be handled 
-#separately (probably will do a string operation then mutate another column on)
-
-unique(survey_data$satisfaction_with_current_methods)
-
-survey_data = survey_data %>% mutate(satisfaction_with_current_methods = 
+new_survey_data = new_survey_data %>% mutate(satisfaction_with_current_methods = 
                                        factor(satisfaction_with_current_methods,
                                               levels = c("1", "2", "3", "4", "5")))
-unique(survey_data$satisfaction_with_search_engines)
+# unique(new_survey_data$satisfaction_with_search_engines)
 
-survey_data = survey_data %>% mutate(satisfaction_with_search_engines =
+new_survey_data = new_survey_data %>% mutate(satisfaction_with_search_engines =
                                        factor(satisfaction_with_search_engines,
                                               levels = c(
                                                 "1",
@@ -135,8 +130,8 @@ survey_data = survey_data %>% mutate(satisfaction_with_search_engines =
                                                 "4",
                                                 "5"
                                               )))
-unique(survey_data$importance_in_saving)
-survey_data = survey_data %>% mutate(importance_in_saving =
+# unique(new_survey_data$importance_in_saving)
+new_survey_data = new_survey_data %>% mutate(importance_in_saving =
                                        factor(importance_in_saving,
                                               levels = c(
                                                 "2",
@@ -144,9 +139,9 @@ survey_data = survey_data %>% mutate(importance_in_saving =
                                                 "4",
                                                 "5"
                                               )))
-unique(survey_data$shopping_methods)
+# unique(new_survey_data$shopping_methods) did this while I worked to see unique values
 
-survey_data = survey_data %>% mutate(shopping_methods = 
+new_survey_data = new_survey_data %>% mutate(shopping_methods = 
                                        factor(shopping_methods, levels = c(
                                          "A mix of online and in-store", 
                                          "Mostly in-store",
@@ -154,26 +149,23 @@ survey_data = survey_data %>% mutate(shopping_methods =
                                        )))
 #unique(survey_data$price_or_convenience) #there is some type of repeat here so
 #this is going to be fixed 
+
 #unique(survey_data$apps) #replace none with NA and then organize the rest of 
 #these so that its just one word or something we will figure it out.
                                     
 ```
 
-```{r}
-head(survey_data, n = 5)
+```{r second head check of new suvey data}
+head(new_survey_data, n = 5)
 ```
 
-Game plan when it comes to this column.
-
-make a separate column for each category then dummy variable it.
-Example: Groceries 1, Gasoline 1, Clothing 1, health & beauty 0...
 
 
-```{r}
-unique(survey_data$most_interested_items) # this will have to be handled 
-#separately (probably will do a string operation then mutate another column on)
-
-survey_data = survey_data %>% mutate(groceries_interest = if_else(
+```{r interest column}
+#Game plan when it comes to this column.
+#make a separate column for each category then dummy variable it.
+#Example: Groceries 1, Gasoline 1, Clothing 1, health & beauty 0...
+new_survey_data = new_survey_data %>% mutate(groceries_interest = if_else(
   str_detect(most_interested_items, "Groceries"), 1,0),
   clothing_interest = if_else(str_detect(most_interested_items, "Clothing"),1,0),
   electronics_interest = if_else(str_detect(
@@ -197,10 +189,13 @@ survey_data = survey_data %>% mutate(groceries_interest = if_else(
      str_detect(most_interested_items, "Gasoline") == FALSE ~ 1,
      TRUE ~ 0
      ))
-```
-Checking as we go to make sure the code is correct.
 
-```{r}
+```
+
+Checking as we go to make sure the code is correct.
+**I manually checked the first ten rows to make sure that everything matched up correctly and it did so yay!**
+
+```{r 3rd head check for sanity purposes}
 head(survey_data, n =10)
 ```
 
@@ -209,25 +204,25 @@ categorizing food as groceries , coffee as groceries , subscription app as
 entertainment but string might be able to detect that.
 
 
-```{r}
+```{r items most spent monthly }
 
 
-unique(survey_data$items_most_spent_monthly) 
+# unique(new_survey_data$items_most_spent_monthly) 
 
 
 #might have duplicates but it doesn't really matter for the analysis 
 #that I am doing 
 
-survey_data = survey_data %>% mutate(items_most_spent_monthly = 
+new_survey_data = new_survey_data %>% mutate(items_most_spent_monthly = 
                                        str_replace(items_most_spent_monthly,
                                                    "(?i)food", "Groceries"))
 
-survey_data = survey_data %>% mutate(items_most_spent_monthly = 
+new_survey_data = new_survey_data %>% mutate(items_most_spent_monthly = 
           str_replace(items_most_spent_monthly, "(?i)Coffee", "Groceries"))
 
-unique(survey_data$items_most_spent_monthly) 
+## unique(new_survey_data$items_most_spent_monthly) 
 
-survey_data = survey_data %>% mutate(groceries_spent_most = if_else(
+new_survey_data = new_survey_data %>% mutate(groceries_spent_most = if_else(
   str_detect(items_most_spent_monthly, "\\s*(?i)Groceries"), 1,0),
   clothing_spent_most = if_else(str_detect(items_most_spent_monthly, "\\s*Clothing"),1,0),
   electronics_spent_most = if_else(str_detect(
@@ -255,18 +250,19 @@ survey_data = survey_data %>% mutate(groceries_spent_most = if_else(
 ```
 
 Checking as we go to make sure the code is correct.
+I am not going to print this chunk but just wanted to show where my mind was at while doing each evaluation.
 
-```{r}
-head(survey_data, n = 10)
+```{r, eval=FALSE}
+head(new_survey_data, n = 10)
 ```
 
 
-```{r}
-unique(survey_data$price_comparison_methods) # this will have to be handled 
+```{r price comparison methods}
+# unique(new_survey_data$price_comparison_methods) # this will have to be handled 
 #separately (probably will do a string operation then mutate another column on)
 
 
-survey_data = survey_data %>% mutate(in_store_check = if_else(
+new_survey_data = new_survey_data %>% mutate(in_store_check = if_else(
   str_detect(price_comparison_methods, "In-store"),1,0),
   online_search_check = case_when(
     str_detect(price_comparison_methods, "\\s*(?i)online") |
@@ -281,27 +277,26 @@ survey_data = survey_data %>% mutate(in_store_check = if_else(
   
 ```
 
-```{r}
-head(survey_data, n = 10)
+Same concept as above 
+```{r, eval = FALSE}
+head(new_survey_data, n = 10)
 ```
 
 
-```{r}
-unique(survey_data$price_or_convenience) #there is some type of repeat here so
-#this is going to be fixed
+```{r price or convenience fix}
+#unique(new_survey_data$price_or_convenience) #there is some type of repeat here so this is going to be fixed
 #there was a repeat on the same value but case was different just ended up converting to sentence case
 
-survey_data = survey_data %>% mutate(price_or_convenience = str_to_sentence(price_or_convenience)) 
+new_survey_data = new_survey_data %>% mutate(price_or_convenience = str_to_sentence(price_or_convenience)) 
 
-unique(survey_data$price_or_convenience) #error fixed
+unique(new_survey_data$price_or_convenience) #error fixed
 
 ```
 
 
-```{r}
-unique(survey_data$apps)
-
-survey_data = survey_data %>% mutate(no_apps_used = 
+```{r apps used}
+unique(new_survey_data$apps)
+new_survey_data = new_survey_data %>% mutate(no_apps_used = 
                       case_when(str_detect(apps,"(?i)\\s*N/?A\\s*") == TRUE |
                                  str_detect(apps,"(?i)\bdon'?t\b") == TRUE |
                                 str_detect(apps,"\\.") == TRUE |
@@ -342,31 +337,21 @@ survey_data = survey_data %>% mutate(no_apps_used =
 
 
 Checking as I go everything seems correct !!
-```{r}
+
+```{r, eval = FALSE}
 head(survey_data, n =10)
 ```
 
-## New column names 
 
 ```{r}
-glimpse(survey_data)
-```
-```{r}
-for (i in 17:ncol(survey_data)) {
-  survey_data[[i]] = as.factor(survey_data[[i]])
-}
+glimpse(new_survey_data)
 ```
 
-```{r}
-#glimpse(survey_data)
-survey_data = survey_data %>% filter(!is.na(gasbuddy))
-```
-
-#Saving as a new csv and .Rdata
+# Saving as a new csv and .Rdata
 
 ```{r}
-write.csv(survey_data,file = "Group6.csv",row.names = FALSE)
-saveRDS(survey_data, file = "survey_data.RData")
+write.csv(new_survey_data,file = "Group6.csv",row.names = FALSE)
+saveRDS(new_survey_data, file = "survey_data.RData")
 
 ```
 
