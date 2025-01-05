@@ -24,7 +24,7 @@ survey_data = read_csv("AppForm.csv")
 
 ## Renaming columns to ease analysis 
 
-A lot of the column names (survey questions) were long due to us wanting the user to understand each question. Although it was a little bit to decide what shorten names to use the most important thing is making sure that we get answers that are indicative of what the user feels. In order for us to do this we have to make sure the questions are clear and leave no room for confusion. 
+A lot of the column names (survey questions) were long due to us wanting the user to understand each question. Although it took a little bit of brainstorming to decide what shorten names to use, the most important thing was making sure that we get answers that are indicative of what the user feels. In order for us to do this we have to make sure the questions are clear and leave no room for confusion. 
 
 
 

@@ -360,33 +360,18 @@ display: none;
 <div id="market-research-survey-analysis" class="section level2">
 <h2>Market Research Survey Analysis</h2>
 <p>– Group 6</p>
-<pre class="r"><code>#pulling the column names 
-survey_names = colnames(survey_data)
-#converting it into a dataframe with column_names as the column name
-survey_names_df = data.frame(column_number = seq_along(survey_names),
-                             column_name = survey_names)
-#writing CSV just of column names since I am renaming every row for convenience 
-write.csv(survey_names_df, file = &quot;survey_names.csv&quot;, row.names = FALSE)</code></pre>
-<pre class="r"><code>head(survey_data, n = 5)</code></pre>
-<pre><code>## # A tibble: 5 × 16
-##   Timestamp     Select your age rang…¹ `Select your gender:` `Select your race:`
-##   &lt;chr&gt;         &lt;chr&gt;                  &lt;chr&gt;                 &lt;chr&gt;              
-## 1 10/18/2024 1… 18-24                  Female                Asian or Pacific I…
-## 2 10/18/2024 1… 18-24                  Female                Hispanic Origin    
-## 3 10/18/2024 1… 18-24                  Female                Asian or Pacific I…
-## 4 10/18/2024 1… 25-34                  Female                White              
-## 5 10/18/2024 1… 18-24                  Female                Hispanic Origin    
-## # ℹ abbreviated name: ¹​`Select your age range:`
-## # ℹ 12 more variables:
-## #   `Do you commute to campus, live on campus, or live off campus? (For college students only)` &lt;chr&gt;,
-## #   `How would you describe the area you currently live?` &lt;chr&gt;,
-## #   `How often do you compare prices before making a purchase?` &lt;chr&gt;,
-## #   `Which types of items are you most interested in finding cheaper prices for? (Select all that apply)` &lt;chr&gt;,
-## #   `Which of the following items do you spend the most money on monthly? (select all that apply)` &lt;chr&gt;, …</code></pre>
+<p>We ended up conducting this survey using <strong>Google
+Forms</strong></p>
 </div>
 <div id="renaming-columns-to-ease-analysis" class="section level2">
 <h2>Renaming columns to ease analysis</h2>
-<pre class="r"><code>survey_data = survey_data %&gt;% rename(date= &quot;Timestamp&quot;,
+<p>A lot of the column names (survey questions) were long due to us
+wanting the user to understand each question. Although it was a little
+bit to decide what shorten names to use the most important thing is
+making sure that we get answers that are indicative of what the user
+feels. In order for us to do this we have to make sure the questions are
+clear and leave no room for confusion.</p>
+<pre class="r"><code>new_survey_data = survey_data %&gt;% rename(date= &quot;Timestamp&quot;,
                                      age_range = `Select your age range:`,
                                      gender = `Select your gender:`,
                                      race = `Select your race:`,
@@ -402,8 +387,10 @@ write.csv(survey_names_df, file = &quot;survey_names.csv&quot;, row.names = FALS
                                      shopping_methods = `How do you typically shop?` ,
                                      price_or_convenience = `Do you usually prioritize price or convenience when shopping?`,
                                      apps = `If possible, please list apps you use to find affordable items within your area.`)</code></pre>
-<p>New Column Names</p>
-<pre class="r"><code>colnames(survey_data)</code></pre>
+</div>
+<div id="new-column-names" class="section level2">
+<h2>New Column names</h2>
+<pre class="r"><code>colnames(new_survey_data)</code></pre>
 <pre><code>##  [1] &quot;date&quot;                              &quot;age_range&quot;                        
 ##  [3] &quot;gender&quot;                            &quot;race&quot;                             
 ##  [5] &quot;commute_or_residence&quot;              &quot;living_area_description&quot;          
@@ -412,7 +399,20 @@ write.csv(survey_names_df, file = &quot;survey_names.csv&quot;, row.names = FALS
 ## [11] &quot;satisfaction_with_current_methods&quot; &quot;satisfaction_with_search_engines&quot; 
 ## [13] &quot;importance_in_saving&quot;              &quot;shopping_methods&quot;                 
 ## [15] &quot;price_or_convenience&quot;              &quot;apps&quot;</code></pre>
-<pre class="r"><code>glimpse(survey_data)</code></pre>
+<p>For reproducibility I saved a separate file called column names with
+both the new and old column names. This is to be used for reference if
+someone is accessing the raw survey data.</p>
+<pre class="r"><code>colnames_new = colnames(new_survey_data)
+colnames_old = colnames(survey_data)
+
+names1 = as.data.frame(colnames_new, row.names = seq_along(colnames_new))
+names2 = as.data.frame(colnames_old, row.names = seq_along(colnames_old))
+
+survey_names_reference = cbind(names2,names1)
+write.csv(survey_names_reference, file = &quot;surveynames.csv&quot;)</code></pre>
+<p>We are going to take a first peak into the survey data to see what
+changes need to be made.</p>
+<pre class="r"><code>glimpse(new_survey_data)</code></pre>
 <pre><code>## Rows: 49
 ## Columns: 16
 ## $ date                              &lt;chr&gt; &quot;10/18/2024 14:23:33&quot;, &quot;10/18/2024 1…
@@ -434,64 +434,57 @@ write.csv(survey_names_df, file = &quot;survey_names.csv&quot;, row.names = FALS
 </div>
 <div id="changing-the-factor-variables-from-character-to-factor" class="section level2">
 <h2>Changing the factor variables from character to factor</h2>
-<pre class="r"><code>unique(survey_data$age_range)</code></pre>
-<pre><code>## [1] &quot;18-24&quot;    &quot;25-34&quot;    &quot;35-44&quot;    &quot;Under 18&quot;</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(age_range = factor(age_range,
+<p>There a several factor variables that are just listed as character
+values. Listing these objects as character values diminishes the real
+meaning behind them. Converting to factor also makes it easier for us to
+make graphs of the data when the times comes to do so. Relationships are
+KEY and doing this helps of discover the relationships in the data.</p>
+<pre class="r"><code># unique(new_survey_data$age_range)
+
+new_survey_data = new_survey_data %&gt;% mutate(age_range = factor(age_range,
                                                         levels = c(&quot;Under 18&quot;,
                                                                    &quot;18-24&quot;,
                                                                    &quot;25-34&quot;,
                                                                    &quot;35-44&quot;)))
 
-unique(survey_data$gender)</code></pre>
-<pre><code>## [1] &quot;Female&quot; &quot;Male&quot;</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(gender = factor(gender, 
+# unique(new_survey_data$gender)
+
+new_survey_data = new_survey_data %&gt;% mutate(gender = factor(gender, 
                               levels = c(&quot;Male&quot;, &quot;Female&quot;)))
 
-unique(survey_data$race)</code></pre>
-<pre><code>## [1] &quot;Asian or Pacific Islander&quot; &quot;Hispanic Origin&quot;          
-## [3] &quot;White&quot;                     &quot;Black or African American&quot;
-## [5] &quot;Prefer not to say&quot;</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(race = factor(race, levels = 
+# unique(new_survey_data$race)
+
+new_survey_data = new_survey_data %&gt;% mutate(race = factor(race, levels = 
 c(&quot;Asian or Pacific Islander&quot;, &quot;Hispanic Origin&quot;, &quot;White&quot;, 
   &quot;Black or African American&quot;, &quot;Prefer not to say&quot;)))
 
-unique(survey_data$commute_or_residence)</code></pre>
-<pre><code>## [1] &quot;Commuter&quot;              &quot;Not a college student&quot; &quot;Off Campus&quot;           
-## [4] &quot;On Campus&quot;</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(commute_or_residence = 
+# unique(new_survey_data$commute_or_residence)
+
+new_survey_data = new_survey_data %&gt;% mutate(commute_or_residence = 
                                        factor(commute_or_residence, levels = c(
                                          &quot;Commuter&quot;, &quot;Not a college student&quot;, 
                                          &quot;Off Campus&quot;, &quot;On Campus&quot;
                                        )) )
-unique(survey_data$living_area_description)</code></pre>
-<pre><code>## [1] &quot;Suburb&quot;     &quot;City&quot;       &quot;Rural area&quot;</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(living_area_description = factor(
+# unique(new_survey_data$living_area_description)
+
+new_survey_data = new_survey_data %&gt;% mutate(living_area_description = factor(
   living_area_description, levels = c(&quot;Suburb&quot;, &quot;City&quot;, &quot;Rural area&quot; )
 ))
 
-unique(survey_data$compare_before_purchase)</code></pre>
-<pre><code>## [1] &quot;Often&quot;     &quot;Sometimes&quot; &quot;Always&quot;    &quot;Rarely&quot;</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(compare_before_purchase = factor(
+# unique(new_survey_data$compare_before_purchase)
+
+new_survey_data = new_survey_data %&gt;% mutate(compare_before_purchase = factor(
   compare_before_purchase, levels = c(&quot;Rarely&quot;, &quot;Sometimes&quot;,&quot;Often&quot;, &quot;Always&quot; )
 ))
 
-#unique(survey_data$most_interested_items) # this will have to be handled 
-#separately (probably will do a string operation then mutate another column on)
+# unique(new_survey_data$satisfaction_with_current_methods)
 
-#unique(survey_data$items_most_spent_monthly) # this will have to be handled 
-#separately (probably will do a string operation then mutate another column on)
-
-#unique(survey_data$price_comparison_methods) # this will have to be handled 
-#separately (probably will do a string operation then mutate another column on)
-
-unique(survey_data$satisfaction_with_current_methods)</code></pre>
-<pre><code>## [1] 3 4 5 2 1</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(satisfaction_with_current_methods = 
+new_survey_data = new_survey_data %&gt;% mutate(satisfaction_with_current_methods = 
                                        factor(satisfaction_with_current_methods,
                                               levels = c(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;)))
-unique(survey_data$satisfaction_with_search_engines)</code></pre>
-<pre><code>## [1] 4 2 3 5 1</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(satisfaction_with_search_engines =
+# unique(new_survey_data$satisfaction_with_search_engines)
+
+new_survey_data = new_survey_data %&gt;% mutate(satisfaction_with_search_engines =
                                        factor(satisfaction_with_search_engines,
                                               levels = c(
                                                 &quot;1&quot;,
@@ -500,9 +493,8 @@ unique(survey_data$satisfaction_with_search_engines)</code></pre>
                                                 &quot;4&quot;,
                                                 &quot;5&quot;
                                               )))
-unique(survey_data$importance_in_saving)</code></pre>
-<pre><code>## [1] 5 4 2 3</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(importance_in_saving =
+# unique(new_survey_data$importance_in_saving)
+new_survey_data = new_survey_data %&gt;% mutate(importance_in_saving =
                                        factor(importance_in_saving,
                                               levels = c(
                                                 &quot;2&quot;,
@@ -510,10 +502,9 @@ unique(survey_data$importance_in_saving)</code></pre>
                                                 &quot;4&quot;,
                                                 &quot;5&quot;
                                               )))
-unique(survey_data$shopping_methods)</code></pre>
-<pre><code>## [1] &quot;A mix of online and in-store&quot; &quot;Mostly in-store&quot;             
-## [3] &quot;Mostly online&quot;</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(shopping_methods = 
+# unique(new_survey_data$shopping_methods) did this while I worked to see unique values
+
+new_survey_data = new_survey_data %&gt;% mutate(shopping_methods = 
                                        factor(shopping_methods, levels = c(
                                          &quot;A mix of online and in-store&quot;, 
                                          &quot;Mostly in-store&quot;,
@@ -521,9 +512,10 @@ unique(survey_data$shopping_methods)</code></pre>
                                        )))
 #unique(survey_data$price_or_convenience) #there is some type of repeat here so
 #this is going to be fixed 
+
 #unique(survey_data$apps) #replace none with NA and then organize the rest of 
 #these so that its just one word or something we will figure it out.</code></pre>
-<pre class="r"><code>head(survey_data, n = 5)</code></pre>
+<pre class="r"><code>head(new_survey_data, n = 5)</code></pre>
 <pre><code>## # A tibble: 5 × 16
 ##   date        age_range gender race  commute_or_residence living_area_descript…¹
 ##   &lt;chr&gt;       &lt;fct&gt;     &lt;fct&gt;  &lt;fct&gt; &lt;fct&gt;                &lt;fct&gt;                 
@@ -538,42 +530,10 @@ unique(survey_data$shopping_methods)</code></pre>
 ## #   price_comparison_methods &lt;chr&gt;, satisfaction_with_current_methods &lt;fct&gt;,
 ## #   satisfaction_with_search_engines &lt;fct&gt;, importance_in_saving &lt;fct&gt;,
 ## #   shopping_methods &lt;fct&gt;, price_or_convenience &lt;chr&gt;, apps &lt;chr&gt;</code></pre>
-<p>Game plan when it comes to this column.</p>
-<p>make a separate column for each category then dummy variable it.
-Example: Groceries 1, Gasoline 1, Clothing 1, health &amp; beauty 0…</p>
-<pre class="r"><code>unique(survey_data$most_interested_items) # this will have to be handled </code></pre>
-<pre><code>##  [1] &quot;Groceries, Gasoline, Clothing&quot;                                                                                               
-##  [2] &quot;Clothing, Electronics, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                                      
-##  [3] &quot;Groceries, Gasoline, Clothing, Electronics, Household items, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;
-##  [4] &quot;Groceries, Clothing, Household items, Health &amp; beauty products&quot;                                                              
-##  [5] &quot;Groceries, Clothing&quot;                                                                                                         
-##  [6] &quot;Groceries, Gasoline&quot;                                                                                                         
-##  [7] &quot;Gasoline, Clothing, Electronics, Household items, Health &amp; beauty products&quot;                                                  
-##  [8] &quot;Clothing, Electronics, Entertainment (movies, events, etc..)&quot;                                                                
-##  [9] &quot;Groceries, Gasoline, Clothing, Electronics, Household items, Health &amp; beauty products&quot;                                       
-## [10] &quot;Clothing, Electronics, Household items, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                     
-## [11] &quot;Groceries, Clothing, Electronics, Entertainment (movies, events, etc..)&quot;                                                     
-## [12] &quot;Clothing, Household items&quot;                                                                                                   
-## [13] &quot;Groceries, Gasoline, Clothing, Household items, Health &amp; beauty products&quot;                                                    
-## [14] &quot;Groceries, Household items, Entertainment (movies, events, etc..)&quot;                                                           
-## [15] &quot;Groceries, Clothing, Electronics, Household items, Health &amp; beauty products&quot;                                                 
-## [16] &quot;Gasoline, Electronics, Household items&quot;                                                                                      
-## [17] &quot;Groceries, Gasoline, Clothing, Health &amp; beauty products&quot;                                                                     
-## [18] &quot;Groceries, Gasoline, Clothing, Electronics&quot;                                                                                  
-## [19] &quot;Gasoline, Electronics, Entertainment (movies, events, etc..)&quot;                                                                
-## [20] &quot;Groceries, Gasoline, Clothing, Electronics, Health &amp; beauty products&quot;                                                        
-## [21] &quot;Clothing, Household items, Health &amp; beauty products&quot;                                                                         
-## [22] &quot;Clothing, Electronics, Household items&quot;                                                                                      
-## [23] &quot;Clothing, Household items, food&quot;                                                                                             
-## [24] &quot;Groceries, Clothing, Household items, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                       
-## [25] &quot;Groceries, Gasoline, Clothing, Household items, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;             
-## [26] &quot;Groceries, Gasoline, Electronics, Household items, Health &amp; beauty products&quot;                                                 
-## [27] &quot;Groceries, Clothing, Electronics, Household items, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;          
-## [28] &quot;Clothing, Household items, Entertainment (movies, events, etc..)&quot;                                                            
-## [29] &quot;Groceries, Clothing, Electronics, Health &amp; beauty products&quot;</code></pre>
-<pre class="r"><code>#separately (probably will do a string operation then mutate another column on)
-
-survey_data = survey_data %&gt;% mutate(groceries_interest = if_else(
+<pre class="r"><code>#Game plan when it comes to this column.
+#make a separate column for each category then dummy variable it.
+#Example: Groceries 1, Gasoline 1, Clothing 1, health &amp; beauty 0...
+new_survey_data = new_survey_data %&gt;% mutate(groceries_interest = if_else(
   str_detect(most_interested_items, &quot;Groceries&quot;), 1,0),
   clothing_interest = if_else(str_detect(most_interested_items, &quot;Clothing&quot;),1,0),
   electronics_interest = if_else(str_detect(
@@ -597,103 +557,49 @@ survey_data = survey_data %&gt;% mutate(groceries_interest = if_else(
      str_detect(most_interested_items, &quot;Gasoline&quot;) == FALSE ~ 1,
      TRUE ~ 0
      ))</code></pre>
-<p>Checking as we go to make sure the code is correct.</p>
+<p>Checking as we go to make sure the code is correct. <strong>I
+manually checked the first ten rows to make sure that everything matched
+up correctly and it did so yay!</strong></p>
 <pre class="r"><code>head(survey_data, n =10)</code></pre>
-<pre><code>## # A tibble: 10 × 24
-##    date       age_range gender race  commute_or_residence living_area_descript…¹
-##    &lt;chr&gt;      &lt;fct&gt;     &lt;fct&gt;  &lt;fct&gt; &lt;fct&gt;                &lt;fct&gt;                 
-##  1 10/18/202… 18-24     Female Asia… Commuter             Suburb                
-##  2 10/18/202… 18-24     Female Hisp… Commuter             Suburb                
-##  3 10/18/202… 18-24     Female Asia… Commuter             Suburb                
-##  4 10/18/202… 25-34     Female White Not a college stude… City                  
-##  5 10/18/202… 18-24     Female Hisp… Commuter             Suburb                
-##  6 10/18/202… 18-24     Female White Commuter             City                  
-##  7 10/18/202… 18-24     Female White Commuter             Rural area            
-##  8 10/18/202… 18-24     Female White Not a college stude… Suburb                
-##  9 10/18/202… 18-24     Female Asia… Commuter             City                  
-## 10 10/18/202… 18-24     Male   Asia… Commuter             Suburb                
-## # ℹ abbreviated name: ¹​living_area_description
-## # ℹ 18 more variables: compare_before_purchase &lt;fct&gt;,
-## #   most_interested_items &lt;chr&gt;, items_most_spent_monthly &lt;chr&gt;,
-## #   price_comparison_methods &lt;chr&gt;, satisfaction_with_current_methods &lt;fct&gt;,
-## #   satisfaction_with_search_engines &lt;fct&gt;, importance_in_saving &lt;fct&gt;,
-## #   shopping_methods &lt;fct&gt;, price_or_convenience &lt;chr&gt;, apps &lt;chr&gt;,
-## #   groceries_interest &lt;dbl&gt;, clothing_interest &lt;dbl&gt;, …</code></pre>
+<pre><code>## # A tibble: 10 × 16
+##    Timestamp    Select your age rang…¹ `Select your gender:` `Select your race:`
+##    &lt;chr&gt;        &lt;chr&gt;                  &lt;chr&gt;                 &lt;chr&gt;              
+##  1 10/18/2024 … 18-24                  Female                Asian or Pacific I…
+##  2 10/18/2024 … 18-24                  Female                Hispanic Origin    
+##  3 10/18/2024 … 18-24                  Female                Asian or Pacific I…
+##  4 10/18/2024 … 25-34                  Female                White              
+##  5 10/18/2024 … 18-24                  Female                Hispanic Origin    
+##  6 10/18/2024 … 18-24                  Female                White              
+##  7 10/18/2024 … 18-24                  Female                White              
+##  8 10/18/2024 … 18-24                  Female                White              
+##  9 10/18/2024 … 18-24                  Female                Asian or Pacific I…
+## 10 10/18/2024 … 18-24                  Male                  Asian or Pacific I…
+## # ℹ abbreviated name: ¹​`Select your age range:`
+## # ℹ 12 more variables:
+## #   `Do you commute to campus, live on campus, or live off campus? (For college students only)` &lt;chr&gt;,
+## #   `How would you describe the area you currently live?` &lt;chr&gt;,
+## #   `How often do you compare prices before making a purchase?` &lt;chr&gt;,
+## #   `Which types of items are you most interested in finding cheaper prices for? (Select all that apply)` &lt;chr&gt;,
+## #   `Which of the following items do you spend the most money on monthly? (select all that apply)` &lt;chr&gt;, …</code></pre>
 <p>Handling this column like we handled the previous categorizing food
 as groceries , coffee as groceries , subscription app as entertainment
 but string might be able to detect that.</p>
-<pre class="r"><code>unique(survey_data$items_most_spent_monthly) </code></pre>
-<pre><code>##  [1] &quot;Groceries, Gasoline, Entertainment (movies, events, etc..)&quot;                                                                  
-##  [2] &quot;Gasoline&quot;                                                                                                                    
-##  [3] &quot;Groceries, Gasoline, Electronics, Health &amp; beauty products&quot;                                                                  
-##  [4] &quot;Groceries&quot;                                                                                                                   
-##  [5] &quot;Clothing&quot;                                                                                                                    
-##  [6] &quot;Groceries, Gasoline&quot;                                                                                                         
-##  [7] &quot;Clothing, Electronics, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                                      
-##  [8] &quot;Groceries, Coffee&quot;                                                                                                           
-##  [9] &quot;Gasoline, Electronics&quot;                                                                                                       
-## [10] &quot;Clothing, Health &amp; beauty products&quot;                                                                                          
-## [11] &quot;Groceries, Electronics, Food (takeout)&quot;                                                                                      
-## [12] &quot;Groceries, Gasoline, Clothing, Electronics, Household items, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;
-## [13] &quot;Groceries, Clothing&quot;                                                                                                         
-## [14] &quot;Groceries, Household items, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                                 
-## [15] &quot;Groceries, rent&quot;                                                                                                             
-## [16] &quot;Groceries, Household items&quot;                                                                                                  
-## [17] &quot;Gasoline, Clothing, Health &amp; beauty products&quot;                                                                                
-## [18] &quot;Groceries, Gasoline, Household items&quot;                                                                                        
-## [19] &quot;Groceries, Clothing, Entertainment (movies, events, etc..)&quot;                                                                  
-## [20] &quot;Clothing, food idk is this included in household items&quot;                                                                      
-## [21] &quot;Clothing, Entertainment (movies, events, etc..)&quot;                                                                             
-## [22] &quot;Clothing, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                                                   
-## [23] &quot;Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                                                             
-## [24] &quot;Groceries, Clothing, Electronics&quot;                                                                                            
-## [25] &quot;Groceries, Clothing, Household items&quot;                                                                                        
-## [26] &quot;Groceries, Gasoline, Clothing, Household items&quot;                                                                              
-## [27] &quot;Groceries, Food&quot;                                                                                                             
-## [28] &quot;Groceries, Clothing, Health &amp; beauty products&quot;                                                                               
-## [29] &quot;Groceries, Subscription apps (kinda entertainment)&quot;                                                                          
-## [30] &quot;Gasoline, Clothing, Food in general&quot;</code></pre>
-<pre class="r"><code>#might have duplicates but it doesn&#39;t really matter for the analysis 
+<pre class="r"><code># unique(new_survey_data$items_most_spent_monthly) 
+
+
+#might have duplicates but it doesn&#39;t really matter for the analysis 
 #that I am doing 
 
-survey_data = survey_data %&gt;% mutate(items_most_spent_monthly = 
+new_survey_data = new_survey_data %&gt;% mutate(items_most_spent_monthly = 
                                        str_replace(items_most_spent_monthly,
                                                    &quot;(?i)food&quot;, &quot;Groceries&quot;))
 
-survey_data = survey_data %&gt;% mutate(items_most_spent_monthly = 
+new_survey_data = new_survey_data %&gt;% mutate(items_most_spent_monthly = 
           str_replace(items_most_spent_monthly, &quot;(?i)Coffee&quot;, &quot;Groceries&quot;))
 
-unique(survey_data$items_most_spent_monthly) </code></pre>
-<pre><code>##  [1] &quot;Groceries, Gasoline, Entertainment (movies, events, etc..)&quot;                                                                  
-##  [2] &quot;Gasoline&quot;                                                                                                                    
-##  [3] &quot;Groceries, Gasoline, Electronics, Health &amp; beauty products&quot;                                                                  
-##  [4] &quot;Groceries&quot;                                                                                                                   
-##  [5] &quot;Clothing&quot;                                                                                                                    
-##  [6] &quot;Groceries, Gasoline&quot;                                                                                                         
-##  [7] &quot;Clothing, Electronics, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                                      
-##  [8] &quot;Groceries, Groceries&quot;                                                                                                        
-##  [9] &quot;Gasoline, Electronics&quot;                                                                                                       
-## [10] &quot;Clothing, Health &amp; beauty products&quot;                                                                                          
-## [11] &quot;Groceries, Electronics, Groceries (takeout)&quot;                                                                                 
-## [12] &quot;Groceries, Gasoline, Clothing, Electronics, Household items, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;
-## [13] &quot;Groceries, Clothing&quot;                                                                                                         
-## [14] &quot;Groceries, Household items, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                                 
-## [15] &quot;Groceries, rent&quot;                                                                                                             
-## [16] &quot;Groceries, Household items&quot;                                                                                                  
-## [17] &quot;Gasoline, Clothing, Health &amp; beauty products&quot;                                                                                
-## [18] &quot;Groceries, Gasoline, Household items&quot;                                                                                        
-## [19] &quot;Groceries, Clothing, Entertainment (movies, events, etc..)&quot;                                                                  
-## [20] &quot;Clothing, Groceries idk is this included in household items&quot;                                                                 
-## [21] &quot;Clothing, Entertainment (movies, events, etc..)&quot;                                                                             
-## [22] &quot;Clothing, Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                                                   
-## [23] &quot;Health &amp; beauty products, Entertainment (movies, events, etc..)&quot;                                                             
-## [24] &quot;Groceries, Clothing, Electronics&quot;                                                                                            
-## [25] &quot;Groceries, Clothing, Household items&quot;                                                                                        
-## [26] &quot;Groceries, Gasoline, Clothing, Household items&quot;                                                                              
-## [27] &quot;Groceries, Clothing, Health &amp; beauty products&quot;                                                                               
-## [28] &quot;Groceries, Subscription apps (kinda entertainment)&quot;                                                                          
-## [29] &quot;Gasoline, Clothing, Groceries in general&quot;</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(groceries_spent_most = if_else(
+## unique(new_survey_data$items_most_spent_monthly) 
+
+new_survey_data = new_survey_data %&gt;% mutate(groceries_spent_most = if_else(
   str_detect(items_most_spent_monthly, &quot;\\s*(?i)Groceries&quot;), 1,0),
   clothing_spent_most = if_else(str_detect(items_most_spent_monthly, &quot;\\s*Clothing&quot;),1,0),
   electronics_spent_most = if_else(str_detect(
@@ -717,52 +623,15 @@ unique(survey_data$items_most_spent_monthly) </code></pre>
      str_detect(items_most_spent_monthly, &quot;Gasoline&quot;) == FALSE ~ 1,
      TRUE ~ 0
      ))</code></pre>
-<p>Checking as we go to make sure the code is correct.</p>
-<pre class="r"><code>head(survey_data, n = 10)</code></pre>
-<pre><code>## # A tibble: 10 × 32
-##    date       age_range gender race  commute_or_residence living_area_descript…¹
-##    &lt;chr&gt;      &lt;fct&gt;     &lt;fct&gt;  &lt;fct&gt; &lt;fct&gt;                &lt;fct&gt;                 
-##  1 10/18/202… 18-24     Female Asia… Commuter             Suburb                
-##  2 10/18/202… 18-24     Female Hisp… Commuter             Suburb                
-##  3 10/18/202… 18-24     Female Asia… Commuter             Suburb                
-##  4 10/18/202… 25-34     Female White Not a college stude… City                  
-##  5 10/18/202… 18-24     Female Hisp… Commuter             Suburb                
-##  6 10/18/202… 18-24     Female White Commuter             City                  
-##  7 10/18/202… 18-24     Female White Commuter             Rural area            
-##  8 10/18/202… 18-24     Female White Not a college stude… Suburb                
-##  9 10/18/202… 18-24     Female Asia… Commuter             City                  
-## 10 10/18/202… 18-24     Male   Asia… Commuter             Suburb                
-## # ℹ abbreviated name: ¹​living_area_description
-## # ℹ 26 more variables: compare_before_purchase &lt;fct&gt;,
-## #   most_interested_items &lt;chr&gt;, items_most_spent_monthly &lt;chr&gt;,
-## #   price_comparison_methods &lt;chr&gt;, satisfaction_with_current_methods &lt;fct&gt;,
-## #   satisfaction_with_search_engines &lt;fct&gt;, importance_in_saving &lt;fct&gt;,
-## #   shopping_methods &lt;fct&gt;, price_or_convenience &lt;chr&gt;, apps &lt;chr&gt;,
-## #   groceries_interest &lt;dbl&gt;, clothing_interest &lt;dbl&gt;, …</code></pre>
-<pre class="r"><code>unique(survey_data$price_comparison_methods) # this will have to be handled </code></pre>
-<pre><code>##  [1] &quot;In-store price checking, Online search engines (e.g., Google Shopping), Retailer websites/apps&quot;                                      
-##  [2] &quot;In-store price checking, Word of mouth&quot;                                                                                              
-##  [3] &quot;In-store price checking, Online search engines (e.g., Google Shopping), Retailer websites/apps, Price comparison apps&quot;               
-##  [4] &quot;Online search engines (e.g., Google Shopping)&quot;                                                                                       
-##  [5] &quot;In-store price checking, Retailer websites/apps&quot;                                                                                     
-##  [6] &quot;In-store price checking&quot;                                                                                                             
-##  [7] &quot;Online search engines (e.g., Google Shopping), Retailer websites/apps, Price comparison apps&quot;                                        
-##  [8] &quot;In-store price checking, Online search engines (e.g., Google Shopping), Retailer websites/apps, Price comparison apps, Word of mouth&quot;
-##  [9] &quot;In-store price checking, Online search engines (e.g., Google Shopping), Retailer websites/apps, Word of mouth&quot;                       
-## [10] &quot;Online search engines (e.g., Google Shopping), Word of mouth&quot;                                                                        
-## [11] &quot;Online search engines (e.g., Google Shopping), Retailer websites/apps, Word of mouth&quot;                                                
-## [12] &quot;In-store price checking, Online search engines (e.g., Google Shopping)&quot;                                                              
-## [13] &quot;In-store price checking, Retailer websites/apps, Price comparison apps, Word of mouth&quot;                                               
-## [14] &quot;In-store price checking, Online search engines (e.g., Google Shopping), Price comparison apps&quot;                                       
-## [15] &quot;Online search engines (e.g., Google Shopping), Retailer websites/apps&quot;                                                               
-## [16] &quot;Word of mouth&quot;                                                                                                                       
-## [17] &quot;I go between different websites, usually.&quot;                                                                                           
-## [18] &quot;In-store price checking, Online search engines (e.g., Google Shopping), Word of mouth&quot;                                               
-## [19] &quot;In-store price checking, Price comparison apps&quot;</code></pre>
-<pre class="r"><code>#separately (probably will do a string operation then mutate another column on)
+<p>Checking as we go to make sure the code is correct. I am not going to
+print this chunk but just wanted to show where my mind was at while
+doing each evaluation.</p>
+<pre class="r"><code>head(new_survey_data, n = 10)</code></pre>
+<pre class="r"><code># unique(new_survey_data$price_comparison_methods) # this will have to be handled 
+#separately (probably will do a string operation then mutate another column on)
 
 
-survey_data = survey_data %&gt;% mutate(in_store_check = if_else(
+new_survey_data = new_survey_data %&gt;% mutate(in_store_check = if_else(
   str_detect(price_comparison_methods, &quot;In-store&quot;),1,0),
   online_search_check = case_when(
     str_detect(price_comparison_methods, &quot;\\s*(?i)online&quot;) |
@@ -773,39 +642,17 @@ survey_data = survey_data %&gt;% mutate(in_store_check = if_else(
   word_of_mouth = if_else(str_detect(price_comparison_methods, &quot;\\s*mouth&quot;),1,0),
   price_app_check = if_else(str_detect(price_comparison_methods,
                                        &quot;\\s*comparison apps&quot;),1,0))</code></pre>
-<pre class="r"><code>head(survey_data, n = 10)</code></pre>
-<pre><code>## # A tibble: 10 × 37
-##    date       age_range gender race  commute_or_residence living_area_descript…¹
-##    &lt;chr&gt;      &lt;fct&gt;     &lt;fct&gt;  &lt;fct&gt; &lt;fct&gt;                &lt;fct&gt;                 
-##  1 10/18/202… 18-24     Female Asia… Commuter             Suburb                
-##  2 10/18/202… 18-24     Female Hisp… Commuter             Suburb                
-##  3 10/18/202… 18-24     Female Asia… Commuter             Suburb                
-##  4 10/18/202… 25-34     Female White Not a college stude… City                  
-##  5 10/18/202… 18-24     Female Hisp… Commuter             Suburb                
-##  6 10/18/202… 18-24     Female White Commuter             City                  
-##  7 10/18/202… 18-24     Female White Commuter             Rural area            
-##  8 10/18/202… 18-24     Female White Not a college stude… Suburb                
-##  9 10/18/202… 18-24     Female Asia… Commuter             City                  
-## 10 10/18/202… 18-24     Male   Asia… Commuter             Suburb                
-## # ℹ abbreviated name: ¹​living_area_description
-## # ℹ 31 more variables: compare_before_purchase &lt;fct&gt;,
-## #   most_interested_items &lt;chr&gt;, items_most_spent_monthly &lt;chr&gt;,
-## #   price_comparison_methods &lt;chr&gt;, satisfaction_with_current_methods &lt;fct&gt;,
-## #   satisfaction_with_search_engines &lt;fct&gt;, importance_in_saving &lt;fct&gt;,
-## #   shopping_methods &lt;fct&gt;, price_or_convenience &lt;chr&gt;, apps &lt;chr&gt;,
-## #   groceries_interest &lt;dbl&gt;, clothing_interest &lt;dbl&gt;, …</code></pre>
-<pre class="r"><code>unique(survey_data$price_or_convenience) #there is some type of repeat here so</code></pre>
-<pre><code>## [1] &quot;it depends on the item&quot;   &quot;I prioritize price&quot;      
-## [3] &quot;I prioritize convenience&quot; &quot;It depends on the item&quot;</code></pre>
-<pre class="r"><code>#this is going to be fixed
+<p>Same concept as above</p>
+<pre class="r"><code>head(new_survey_data, n = 10)</code></pre>
+<pre class="r"><code>#unique(new_survey_data$price_or_convenience) #there is some type of repeat here so this is going to be fixed
 #there was a repeat on the same value but case was different just ended up converting to sentence case
 
-survey_data = survey_data %&gt;% mutate(price_or_convenience = str_to_sentence(price_or_convenience)) 
+new_survey_data = new_survey_data %&gt;% mutate(price_or_convenience = str_to_sentence(price_or_convenience)) 
 
-unique(survey_data$price_or_convenience) #error fixed</code></pre>
+unique(new_survey_data$price_or_convenience) #error fixed</code></pre>
 <pre><code>## [1] &quot;It depends on the item&quot;   &quot;I prioritize price&quot;      
 ## [3] &quot;I prioritize convenience&quot;</code></pre>
-<pre class="r"><code>unique(survey_data$apps)</code></pre>
+<pre class="r"><code>unique(new_survey_data$apps)</code></pre>
 <pre><code>##  [1] &quot;N/a&quot;                                                                                                                                                                                 
 ##  [2] &quot;Does Amazon count?&quot;                                                                                                                                                                  
 ##  [3] &quot;No particular apps right now, just google search and compare from there&quot;                                                                                                             
@@ -848,7 +695,7 @@ unique(survey_data$price_or_convenience) #error fixed</code></pre>
 ## [40] &quot;depop, facebook market&quot;                                                                                                                                                              
 ## [41] &quot;I mainly just use online search engines and search up a broad definition of the product i want (ex: mens blank gray tshirt medium) and compare the prices of the results that pop up&quot;
 ## [42] &quot;.&quot;</code></pre>
-<pre class="r"><code>survey_data = survey_data %&gt;% mutate(no_apps_used = 
+<pre class="r"><code>new_survey_data = new_survey_data %&gt;% mutate(no_apps_used = 
                       case_when(str_detect(apps,&quot;(?i)\\s*N/?A\\s*&quot;) == TRUE |
                                  str_detect(apps,&quot;(?i)\bdon&#39;?t\b&quot;) == TRUE |
                                 str_detect(apps,&quot;\\.&quot;) == TRUE |
@@ -886,30 +733,7 @@ unique(survey_data$price_or_convenience) #error fixed</code></pre>
             retailmenot = if_else(str_detect(apps,&quot;(?i)\\s*retailmenot&quot;),1,0))</code></pre>
 <p>Checking as I go everything seems correct !!</p>
 <pre class="r"><code>head(survey_data, n =10)</code></pre>
-<pre><code>## # A tibble: 10 × 45
-##    date       age_range gender race  commute_or_residence living_area_descript…¹
-##    &lt;chr&gt;      &lt;fct&gt;     &lt;fct&gt;  &lt;fct&gt; &lt;fct&gt;                &lt;fct&gt;                 
-##  1 10/18/202… 18-24     Female Asia… Commuter             Suburb                
-##  2 10/18/202… 18-24     Female Hisp… Commuter             Suburb                
-##  3 10/18/202… 18-24     Female Asia… Commuter             Suburb                
-##  4 10/18/202… 25-34     Female White Not a college stude… City                  
-##  5 10/18/202… 18-24     Female Hisp… Commuter             Suburb                
-##  6 10/18/202… 18-24     Female White Commuter             City                  
-##  7 10/18/202… 18-24     Female White Commuter             Rural area            
-##  8 10/18/202… 18-24     Female White Not a college stude… Suburb                
-##  9 10/18/202… 18-24     Female Asia… Commuter             City                  
-## 10 10/18/202… 18-24     Male   Asia… Commuter             Suburb                
-## # ℹ abbreviated name: ¹​living_area_description
-## # ℹ 39 more variables: compare_before_purchase &lt;fct&gt;,
-## #   most_interested_items &lt;chr&gt;, items_most_spent_monthly &lt;chr&gt;,
-## #   price_comparison_methods &lt;chr&gt;, satisfaction_with_current_methods &lt;fct&gt;,
-## #   satisfaction_with_search_engines &lt;fct&gt;, importance_in_saving &lt;fct&gt;,
-## #   shopping_methods &lt;fct&gt;, price_or_convenience &lt;chr&gt;, apps &lt;chr&gt;,
-## #   groceries_interest &lt;dbl&gt;, clothing_interest &lt;dbl&gt;, …</code></pre>
-</div>
-<div id="new-column-names" class="section level2">
-<h2>New column names</h2>
-<pre class="r"><code>glimpse(survey_data)</code></pre>
+<pre class="r"><code>glimpse(new_survey_data)</code></pre>
 <pre><code>## Rows: 49
 ## Columns: 45
 ## $ date                              &lt;chr&gt; &quot;10/18/2024 14:23:33&quot;, &quot;10/18/2024 1…
@@ -957,14 +781,11 @@ unique(survey_data$price_or_convenience) #error fixed</code></pre>
 ## $ gasbuddy                          &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
 ## $ honey                             &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
 ## $ retailmenot                       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</code></pre>
-<pre class="r"><code>for (i in 17:ncol(survey_data)) {
-  survey_data[[i]] = as.factor(survey_data[[i]])
-}</code></pre>
-<pre class="r"><code>#glimpse(survey_data)
-survey_data = survey_data %&gt;% filter(!is.na(gasbuddy))</code></pre>
-<p>#Saving as a new csv and .Rdata</p>
-<pre class="r"><code>write.csv(survey_data,file = &quot;Group6.csv&quot;,row.names = FALSE)
-saveRDS(survey_data, file = &quot;survey_data.RData&quot;)</code></pre>
+</div>
+<div id="saving-as-a-new-csv-and-.rdata" class="section level1">
+<h1>Saving as a new csv and .Rdata</h1>
+<pre class="r"><code>write.csv(new_survey_data,file = &quot;Group6.csv&quot;,row.names = FALSE)
+saveRDS(new_survey_data, file = &quot;survey_data.RData&quot;)</code></pre>
 </div>
 
 
