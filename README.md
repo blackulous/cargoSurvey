@@ -1,6 +1,7 @@
 ## Cargo Survey Analysis
 
 **Role**: UX Researcher
+
 **Time to Complete**: 1 week
 
 The code enclosed here shows analysis conducted for the cargo app case study. This allowed us to design from a data driven perspective and helped us tailor our app to address user needs. 
